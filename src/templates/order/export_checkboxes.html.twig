@@ -1,0 +1,30 @@
+{{ form_start(exportForm, {'method': 'POST', 'attr': {'id':'form_export_fields'} } ) }}
+    <h3>Информация о заказе</h3>
+    {{ form_row(exportForm.id) }}
+    {{ form_row(exportForm.orderId) }}
+    {{ form_row(exportForm.shop_name) }}
+    {{ form_row(exportForm.erpExternalId) }}
+    {{ form_row(exportForm.utmCampaign) }}
+    {{ form_row(exportForm.link) }}
+    {{ form_row(exportForm.createdAt) }}
+    {{ form_row(exportForm.paymentMethod) }}
+    {{ form_row(exportForm.shop_currency) }}
+    {{ form_row(exportForm.shippingPrice) }}
+    {{ form_row(exportForm.total) }}
+    {{ form_row(exportForm.note) }}<br/>
+    <h3>Информация о клиенте</h3>
+    {{ form_row(exportForm.name) }}
+    {{ form_row(exportForm.phone) }}
+    {{ form_row(exportForm.email) }}
+    {{ form_row(exportForm.region) }}
+    {{ form_row(exportForm.city) }}
+    {{ form_row(exportForm.zip) }}
+    {{ form_row(exportForm.address) }}
+    {{ form_row(exportForm.house) }}
+    {{ form_row(exportForm.entrance) }}
+    {{ form_row(exportForm.floor) }}
+    {{ form_row(exportForm.flat) }}
+    <h3>Продукты</h3>
+    {{ form_row(exportForm.orderItems) }}
+{{ form_end(form) }}
+<input id="exp_section" type="hidden" name="section" value="order">

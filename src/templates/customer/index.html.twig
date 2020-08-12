@@ -1,0 +1,120 @@
+{% extends 'main.html.twig' %}
+
+{% block title %}Клиенты{% endblock %}
+
+{% block body %}
+    <div class="ibox">
+        {{ form_start(form, {'method': 'GET'}) }}
+        <div class="row">
+
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.name) }}
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.phone) }}
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.email) }}
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.city) }}
+            </div>
+
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.shop) }}
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.create_date) }}
+            </div>
+
+            {{ form_row(form.csv_fields) }}
+            <input id="submit_csv" formaction="{{ url('customer_export_csv') }}"
+                   formmethod="get" type="submit" value="" style="display: none;" >
+
+        </div>
+        {{ form_end(form) }}
+    </div>
+    <div  class="save_csv" >
+        <a id="show_export_fields" class="btn btn-primary btn-xs">
+            <i class="fa fa-cloud"></i>
+            Сохранить в CSV
+        </a>
+    </div>
+
+    <div class="ibox">
+        <div class="ibox-content">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{ knp_pagination_sortable(customers, 'ID'|trans, 'o.id') }}</th>
+                    <th>Имя</th>
+                    <th>Телефон</th>
+                    <th>Город</th>
+                    <th>Список корзин</th>
+                    <th>Магазины</th>
+                    <th>Дата создания</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if customers.count > 0 %}
+                    {% for customer in customers %}
+                        <tr>
+                            <td><a href="{{ url('customer_view', {id: customer.id}) }}">{{ customer.id }}</a></td>
+                            <td>{{ customer.name }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.city }}</td>
+                            <td>
+                                {% if customer.carts.count >0 %}
+                                    {% set arrayt = [] %}
+                                    {% for cart in customer.carts %}
+                                        {% set array2 = [cart.id] %}
+                                        {% if cart.id not in arrayt  %}
+                                            {% if cart.hasActiveOrder %}
+                                                <a href="{{ url('cart_view', {id: cart.id}) }}" class="btn btn-primary btn-xs">
+                                                    {{ cart.id }} <i class="fa fa-check" aria-hidden="true"></i>
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ url('cart_view', {id: cart.id}) }}" class="btn btn-default btn-xs">
+                                                    {{ cart.id }} <i class="fa fa-times" aria-hidden="true"></i>
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% set arrayt = arrayt|merge( array2 ) %}
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if customer.carts.count >0 %}
+                                    {% set arrayt = [] %}
+                                    {% for cart in customer.carts %}
+                                        {% set array2 = [cart.shop.id] %}
+                                        {% if cart.shop.id not in arrayt  %}
+                                            {{ cart.shop.id }} - {{ cart.shop.name }} <br />
+                                        {% endif %}
+                                        {% set arrayt = arrayt|merge( array2 ) %}
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                            <td>{{ customer.createdAt|date('d.m.y H:i') }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            Нет клиентов...
+                        </td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+            {{ knp_pagination_render(customers) }}
+        </div>
+    </div>
+
+    {% include 'export_fields.html.twig' with {'export_section': 'customer'}  %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/main/export.js') }}"></script>
+{% endblock %}

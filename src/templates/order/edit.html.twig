@@ -1,0 +1,15 @@
+{% extends 'main.html.twig' %}
+
+{% block title %}Редактирование заказа: "{{ order.id }}"{% endblock %}
+
+{% block body %}
+    <div class="ibox">
+        <div class="ibox-content">
+            <div class="m-b-md">
+                <a href="{{ url('order_view', {id: order.id}) }}" class="btn btn-default"><i class="fa fa-arrow-left"></i> Назад</a>
+            </div>
+
+            {% include 'order/_form.html.twig' %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends 'main.html.twig' %}
+{% block title %}Просмотр заказа{% endblock %}
+{% block body %}
+<div class="ibox">
+    <div class="ibox-content">
+        <div class="tabs-container">
+            <div class="tab-content">
+                <div class="panel-body">
+                    {% block tab %}{% endblock %}
+                    <div class="row">
+                        <div class="col-sm-9">
+                            <h3>Информация о заказе</h3>
+                        </div>
+                    </div>
+
+                    <div>
+                        <table class="table table-striped">
+                            <tr>
+                                <td class="col-sm-4"><b>Магазин</b></td>
+                                <td class="col-sm-8">{{ order.shop.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Id в магазине</b></td>
+                                <td>{{ order.orderId }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Id в ERP</b></td>
+                                <td>{% if order.erpExternalId is not null and order.erpExternalId == 0 %}skip{% else %} {{ order.erpExternalId??'N/A' }}{% endif %}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>utmCampaign</b></td>
+                                <td>{% if order.utmCampaign is null %}не указана{% else %} {{ order.utmCampaign }}{% endif %}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>utmLink</b></td>
+                                <td>{% if order.link is null %}не указана{% else %} {{ order.link }}{% endif %}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Дата оформления</b></td>
+                                <td>{{ order.createdAt|date('d.m.y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Метод оплаты</b></td>
+                                <td>{{ order.paymentMethod }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Валюта</b></td>
+                                <td>{% if order.shop.currency is not null %}{{ order.shop.currency.getCode }} ({{ order.shop.currency.getName }}){% else %}-{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Стоимость товаров</b></td>
+                                <td>{{ order.itemsPrice }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Стоимость доставки</b></td>
+                                <td>{{ order.shippingPrice }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Итого</b></td>
+                                <td>{{ order.total }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Статус</b></td>
+                                <td>
+                                    {{ statuses[order.status] }}
+                                    <a style="margin-left: 30px;" class="btn btn-xs btn-info" href="{{ url('order_update', {id: order.id}) }}">
+                                        Редактировать
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><b>Коментарий</b></td>
+                                <td>{{ order.note }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <h3>Информация о клиенте</h3>
+                    <div>
+                        <table class="table table-striped">
+                            <tr>
+                                <td class="col-sm-4"><b>Имя</b></td>
+                                <td class="col-sm-8">{{ order.name }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Телефон</b></td>
+                                <td>{{ order.phone }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Email</b></td>
+                                <td>{{ order.email }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Регион</b></td>
+                                <td>{{ order.region }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Город</b></td>
+                                <td>{{ order.city }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Zip</b></td>
+                                <td>{{ order.zip }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Адрес</b></td>
+                                <td>{{ order.address1 }} {{ order.address2 }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Дом</b></td>
+                                <td>{{ order.house }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Вход</b></td>
+                                <td>{{ order.entrance }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Этаж</b></td>
+                                <td>{{ order.floor }}</td>
+                            </tr>
+
+                            <tr>
+                                <td><b>Квартира</b></td>
+                                <td>{{ order.flat }}</td>
+                            </tr>
+                        </table>
+                        <h3>Информация о корзине</h3>
+                        <div>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><b>ID:</b></td>
+                                    <td>{{ order.cart.id }}</td>
+                                </tr>
+
+                                <tr>
+                                    <td><b>Дата создания корзины:</b></td>
+                                    <td>{{ order.cart.createdAt|date('d.m.y H:i') }}</td>
+                                </tr>
+
+                                <tr>
+                                    <td><b>Стоимость товаров:</b></td>
+                                    <td>{{ order.cart.itemsPrice }}</td>
+                                </tr>
+
+                                <tr>
+                                    <td><b>Стоимость доставки:</b></td>
+                                    <td>{{ order.cart.shippingPrice }}</td>
+                                </tr>
+
+                                <tr>
+                                    <td><b>Итого:</b></td>
+                                    <td>{{ order.cart.total }}</td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="2"><a target="_blank" class="btn btn-info btn-xs"
+                                                       href="{{ url("cart_view", {id:order.cart.id}) }}">Перейти к
+                                            корзине</a></td>
+                                </tr>
+                            </table>
+                            <h3>Товары</h3>
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>id</th>
+                                    <th>Название</th>
+                                    <th>Цена</th>
+                                    <th>Количество</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for cartItem in order.orderItems %}
+                                    <tr>
+                                        <td>{{ cartItem.nomenclature.id }}</td>
+                                        <td>
+                                            <b>{{ cartItem.nomenclature.product.name ?? 'Неизвестный продукт' }}</b> {{ cartItem.nomenclature.name ?? '' }}
+                                        </td>
+                                        <td>{{ cartItem.price }}</td>
+                                        <td>{{ cartItem.quantity }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            <h3>АБ-тесты</h3>
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Название</th>
+                                    <th>Код</th>
+                                    <th>Type</th>
+                                    <th>Статус</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for abTest in abTests %}
+                                    <tr>
+                                        <td><a href="{{ url('ab_test_edit', {id:abTest.id}) }}">{{ abTest.id }}</a></td>
+                                        <td>{{ abTest.name }}</td>
+                                        <td>{{ abTest.code }}</td>
+                                        <td>{{ abTest.type }}</td>
+                                        <td>{{ abTestStatuses[abTest.status] }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <h3>Cтатус в ERP PAY</h3>
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Статус</th>
+                                    <th>Ответ от ERP</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for erpLog in erpLogs %}
+                                    <tr>
+                                        <td>{{ erpLog.createdAt|date('d.m.y H:i') }}</td>
+                                        <td>{{ erpLog.status }}</td>
+                                        <td><pre>{{ erpLog.response|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre></td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock %}

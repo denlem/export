@@ -1,0 +1,240 @@
+{% extends 'main.html.twig' %}
+
+{% block title %}Заказы{% endblock %}
+
+{% block body %}
+    <div class="ibox">
+        {{ form_start(form, {'method': 'GET'}) }}
+        <div class="row">
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.shop) }}
+            </div>
+            <div class="col-md-6 col-sm-12 col-lg-3">
+                {{ form_row(form.paymentType) }}
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.from) }}
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.to) }}
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                {{ form_row(form.currency) }}
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-3">
+                <div class="form-group">
+                    <label class="" for="order_filter_currency">Статус</label><br>
+                    {{ form_row(form.status) }}
+                </div>
+            </div>
+
+            {{ form_row(form.csv_fields) }}
+            <input id="submit_csv" formaction="{{ url('order_export_csv') }}"
+                   formmethod="get" type="submit" value="" style="display: none;">
+
+        </div>
+        {{ form_end(form) }}
+    </div>
+    <div class="save_csv">
+        <a id="show_export_fields" class="btn btn-primary btn-xs">
+            <i class="fa fa-cloud"></i>
+            Экспорт в CSV
+        </a>
+    </div>
+    <div class="count_orders">
+        Найдено заказов: {% if orders.count > 0 %} {{ orders.getTotalItemCount }} {% else %}0{% endif %}
+        {% if sumData.currency != null %} &nbsp; Общая сумма: {{ sumData.summ }} {{ sumData.currency }} {% endif %}
+    </div>
+    <div class="ibox">
+        <div class="ibox-content">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{ knp_pagination_sortable(orders, 'ID'|trans, 't.id') }}</th>
+                    <th><b>Магазин</b></th>
+                    <th>Клиент</th>
+                    <th>Сумма</th>
+                    <th>Валюта</th>
+                    <th>Способ оплаты</th>
+                    <th>Дата</th>
+                    <th>ERP ID</th>
+                    <th>Статус</th>
+                    <th>Отправить заказ</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if orders.count > 0 %}
+                    {% for order in orders %}
+                        {% set totalSelectedCurrency = '' %}
+                        {% if order.shop.currency is not null and sumData.currency is not null and order.shop.currency.getCode != sumData.currency
+                            and order.shop.currency.getRate is not null and order.shop.currency.getRate > 0 %}
+                            {% set totalSelectedCurrency = ( order.total / order.shop.currency.getRate * sumData.rate ) |number_format(2) %}
+                        {% endif %}
+                        <tr>
+                            <td><a href="{{ url('order_view', {id: order.id}) }}">{{ order.id }}</a></td>
+                            <td>{{ order.shop.name }}</td>
+                            <td>{{ order.name }}</td>
+                            <td>{{ order.total }}
+                                {% if totalSelectedCurrency != '' %}({{ totalSelectedCurrency }} {{ sumData.currency }}){% endif %}</td>
+                            <td>{% if order.shop.currency is not null %}{{ order.shop.currency.getCode }}{% else %}-{% endif %}</td>
+                            <td>{{ order.paymentMethod }}</td>
+                            <td>{{ order.updatedAt|date('d.m.y H:i') }}</td>
+                            <td id="order_erpId_{{ order.id }}">{% if order.erpExternalId is not null and order.erpExternalId == 0 %}skip{% else %} {{ order.erpExternalId??'N/A' }}{% endif %}</td>
+                            <td id="order_status_{{ order.id }}">{{ statuses[order.status] }}</td>
+                            <td>
+                            {% if order.shop.isWorking == true
+                                and order.status == constant('App\\Constant\\OrderStatuses::ERP_CREATING_ERROR')
+                                and order.phone != constant('App\\Constant\\ErpParams::TEST_PHONE') %}
+                                    <a id="order_erp_{{ order.id }}" class="btn btn-primary btn-xs order_send_erp">
+                                        <i class="fa fa-paper-plane-o"></i>
+                                        отправить заказ в ERP
+                                    </a>
+                                    <div id="order_loader_{{ order.id }}" class="ajax_loader"></div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            Нет заказов...
+                        </td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+
+            {{ knp_pagination_render(orders) }}
+        </div>
+    </div>
+    <style>
+
+        fieldset {
+            display: block;
+        }
+
+        fieldset legend {
+            width: 100%;
+            background-color: white;
+            position: relative;
+            cursor: pointer;
+            display: inline-block;
+            padding: 6px 12px;
+            padding-left: 15px;
+            padding-right: 15px;
+            border: 1px solid #ccc;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 1.42857143;
+            margin-bottom: 0px;
+        }
+
+        fieldset legend:after {
+            position: absolute;
+            content: "";
+            border-left: 2px solid #676a6c;
+            border-top: 2px solid #676a6c;
+            padding: 2.5px;
+            right: 5px;
+            top: 35%;
+            -moz-transform: rotate(-135deg);
+            -ms-transform: rotate(-135deg);
+            -o-transform: rotate(-135deg);
+            -webkit-transform: rotate(-135deg);
+            transform: rotate(-135deg);
+        }
+
+        fieldset.visible legend {
+            border: 1px solid #1ab394;
+        }
+
+        fieldset legend:active:after {
+            right: 5px;
+            top: 35%;
+        }
+
+        fieldset #order_filter_status {
+            width: -moz-available;
+            width: -webkit-fill-available;
+            width: fill-available;
+            margin-right: 30px;
+            background-color: white;
+            padding-left: 5px;
+            display: none;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+
+        label.form-check-label {
+            font-size: 12px;
+            font-weight: normal;
+            white-space: pre;
+            min-height: 1.2em;
+            padding: 0px 2px 1px;
+        }
+
+        fieldset #order_filter_status div {
+            list-style: none;
+        }
+
+        fieldset.visible #order_filter_status {
+            display: block;
+            position: absolute;
+        }
+    </style>
+    {% include 'export_fields.html.twig' with {'export_section': 'order'} %}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/order/order.js') }}"></script>
+    <script src="{{ asset('js/main/export.js') }}"></script>
+    <script>
+        var checkList = document.getElementsByTagName('fieldset')[0];
+        window.onclick = function (evt) {
+            if (!checkList.contains(evt.target)) {
+                checkList.classList.remove('visible');
+            }
+        }
+        checkList.getElementsByTagName('legend')[0].onclick = function (evt) {
+            if (checkList.classList.contains('visible')) {
+                checkList.classList.remove('visible');
+                checkList.getElementsByTagName('legend')[0].focus()
+            } else {
+                checkList.classList.add('visible');
+            }
+        }
+
+        window.onload = function () {
+            let checked = [];
+            let checkboxes = checkList.getElementsByTagName('input');
+            Array.prototype.forEach.call(checkboxes, function (el, i) {
+                if (el.checked) {
+                    checked.push(el);
+                }
+            })
+            if (checked.length > 0) {
+                checkList.getElementsByTagName('legend')[0].innerHTML = 'Выбрано статусов:' + checked.length
+            } else {
+                checkList.getElementsByTagName('legend')[0].innerHTML = 'Выберите статусы'
+            }
+        }
+
+        let checkboxes = checkList.getElementsByTagName('input');
+        Array.prototype.forEach.call(checkboxes, function (el, i) {
+            el.onclick = function (evt) {
+                let checked = [];
+                let checkboxes = checkList.getElementsByTagName('input');
+                Array.prototype.forEach.call(checkboxes, function (el, i) {
+                    if (el.checked) {
+                        checked.push(el);
+                    }
+                })
+                if (checked.length > 0) {
+                    checkList.getElementsByTagName('legend')[0].innerHTML = 'Выбрано статусов:' + checked.length
+                } else {
+                    checkList.getElementsByTagName('legend')[0].innerHTML = 'Выберите статусы'
+                }
+            }
+        })
+    </script>
+{% endblock %}

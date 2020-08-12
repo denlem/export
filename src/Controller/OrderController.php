@@ -48,12 +48,19 @@ class OrderController extends AbstractController
 
         $exportForm = $this->createForm(ExportFieldsType::class)->handleRequest($request);
 
-        $qb = $orderQueryBuilder->create($form);
+        $orderQueryBuilder->create($form);
+
+        $user = $this->getUser();
+        if ($user->getRoles()[0] === Roles::ORDER_MANAGER) {
+            $orderQueryBuilder->forUser($user->getId());
+        }
+
+        $qb = $orderQueryBuilder->getQueryBuilder();
 
         $page = $request->query->getInt('page', 1);
 
         $orders = $paginator->paginate($qb, $page, 20, [
-            'defaultSortFieldName' => ['o.id'],
+            'defaultSortFieldName' => ['t.id'],
             'defaultSortDirection' => 'desc',
         ]);
 
@@ -148,12 +155,15 @@ class OrderController extends AbstractController
         OrderErpManagerInterface $orderErpManager
     )
     {
-        if ($order->getStatus() == OrderStatuses::ERP_CREATING_ERROR && $order->getShop()->getIsWorking() ) {
-            $erpId = $orderErpManager->createErpOrder($order);
-            $order = $orderErpManager->saveErpOrder($order, $erpId);
+        if ($order->getStatus() == OrderStatuses::ERP_CREATING_ERROR) {
+            if ( $order->getShop()->getIsWorking() ) {
+                $erpId = $orderErpManager->createErpOrder($order);
+                $order = $orderErpManager->saveErpOrder($order, $erpId);
+            }
             if ($order->getStatus() == OrderStatuses::ERP_CREATED || $order->getStatus() == OrderStatuses::TEST) {
+                $statusShow = ($order->getStatus() == OrderStatuses::ERP_CREATED) ? OrderStatuses::MAP[OrderStatuses::ERP_CREATED] : OrderStatuses::MAP[OrderStatuses::TEST];
                 return $this->json(["result" => "ok",
-                    "status" => OrderStatuses::MAP[$order->getStatus()],
+                    "status" => $statusShow,
                     "erpId" => $erpId], 200);
             }
         }

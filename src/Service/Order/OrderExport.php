@@ -5,7 +5,6 @@ namespace App\Service\Order;
 
 
 use App\Constant\OrderExportFields;
-use App\Constant\OrderStatuses;
 use App\Entity\Currency;
 use App\Repository\CurrencyRepository;
 use App\Service\Export\ExportInterface;
@@ -66,13 +65,11 @@ class OrderExport implements ExportInterface
         $i=0;
         foreach ($dataOrders as $dataIndex => $dataItem) {
             foreach ($this->fieldsDataCsv as $k => $v) {
-                if (!in_array($v, ['shop_name', 'orderItems', 'shop_currency', 'address', 'createdAt', 'total', 'status'])) {
+                if (!in_array($v, ['shop_name', 'orderItems', 'shop_currency', 'address', 'createdAt', 'total'])) {
                     $newDataOrders[$i][OrderExportFields::getLabel($v)] = $dataItem[$v];
                 } else {
                     if ($v == 'shop_name') {
                         $newDataOrders[$i][OrderExportFields::getLabel($v)] = $dataItem['shop']['name'];
-                    } elseif ($v == 'status') {
-                        $newDataOrders[$i][OrderExportFields::getLabel($v)] = OrderStatuses::MAP[$dataItem[$v]];
                     } elseif ($v == 'total') {
                         $newDataOrders[$i][OrderExportFields::getLabel($v)] = $dataItem[$v];
                         if ($this->currencyData !== null &&  $dataItem['shop']['currency'] != null

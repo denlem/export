@@ -1,0 +1,70 @@
+{% extends 'main.html.twig' %}
+{% block title %}Клиент {{ customer.name }}{% endblock %}
+{% block body %}
+    <div class="ibox">
+        <div class="ibox-content">
+            <div class="tabs-container">
+                <div class="tab-content">
+                    <div class="tab-pane active">
+                        <div class="panel-body">
+                            {% block tab %}{% endblock %}
+                            <h3>Информация о клиенте</h3>
+                            <div>
+                                <table  class="table table-striped">
+                                    <tr>
+                                        <td>UUID</td>
+                                        <td>{{ customer.uuid }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Имя</td>
+                                        <td>{{ customer.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Телефон</td>
+                                        <td>{{ customer.phone }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Email</td>
+                                        <td>{{ customer.email }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Регион</td>
+                                        <td>{{ customer.region }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Город</td>
+                                        <td>{{ customer.city }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Zip</td>
+                                        <td>{{ customer.zip }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Адрес</td>
+                                        <td>{{ customer.address1 }} {{ customer.address2 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Дом</td>
+                                        <td>{{ customer.house }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Вход</td>
+                                        <td>{{ customer.entrance }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Этаж</td>
+                                        <td>{{ customer.floor }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Квартира</td>
+                                        <td>{{ customer.flat }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
